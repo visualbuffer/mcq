@@ -75,7 +75,7 @@ class Reader(object):
    
    def rtf2text(self):
       f= open(self.path,"r")
-      text = f.read().decode()
+      text = f.read()
       self.text = self._striprtf(text)
       self.preProcess()
       f.close()
@@ -84,7 +84,7 @@ class Reader(object):
    
    def text2text(self):
       f= open(self.path,"r")
-      text = f.read().decode()
+      text = f.read()
       self.text = self._striprtf(text)
       self.preProcess()
       f.close()
