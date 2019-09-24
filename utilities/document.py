@@ -1,25 +1,25 @@
 from docx import Document
 import re
 from html2text import HTML2Text
-from io import  BytesIO
 from subprocess import check_output
-from pdfminer.converter import  HTMLConverter
-from pdfminer.pdfinterp import PDFPageInterpreter
-from pdfminer.pdfinterp import PDFResourceManager
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.converter import TextConverter
+from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
-from urllib3 import PoolManager
+from cStringIO import StringIO
+
 from pdfminer.layout import LAParams
 import yaml
 from shutil import copyfileobj
 from datetime import datetime
 import os
 
-SETTINGS = yaml.load(open('D:\ki-ai\settings.yaml'))
+SETTINGS = yaml.load(open('./settings.yaml'))
 
 
 class Reader(object):
 
-    path : str = 'https://sweets.construction.com/swts_content_files_nas/153304/933113.pdf'
+    path : str = './files/933113.pdf'
     text = ''
     html =''
     pages : [str] = []
@@ -31,39 +31,35 @@ class Reader(object):
             self.path =  kwagrs['path']
             _file =  self.path.split('.')
             if len(_file)>1:
-                http = PoolManager()
-                self.response = http.request('GET', self.path, preload_content=False)
-                self._file_extension  = _file[-1]
-                if self._file_extension == 'docx':
-                    self.docx2text()
-                elif self._file_extension == 'pdf' : 
-                    self.pdf2text()
-                elif self._file_extension == 'doc' : 
-                    self.doc2text()
-                elif self._file_extension == 'rtf' : 
-                    self.rtf2text()
+               self.response = open(self.path,"r")
+               self._file_extension  = _file[-1]
+               if self._file_extension == 'docx':
+                  self.docx2text()
+               elif self._file_extension == 'pdf' : 
+                  self.pdf2text()
+               elif self._file_extension == 'doc' : 
+                  self.doc2text()
+               elif self._file_extension == 'rtf' : 
+                  self.rtf2text()
+               self.response.close()
 
     #TODO RTF PARSER AND DOC PARSER
     #TODO DOC PARSER
 
     def docx2text(self):
-        document = Document(BytesIO(self.response.data))
+        document = Document(self.path)
         text = ''
-        for para in document.paragraphs :
+        self.paragraphs = document.paragraphs
+        for para in self.paragraphs :
             text +=  para.text + "\n\n" 
         self.text = text
         self.preProcess()
         return self.text
     
     def doc2text(self):
-        filename  =  SETTINGS['DOCUMENT']['TEMP_DIR']+str(int(datetime.now().timestamp()*1000000))+'.doc'
         antiword =  SETTINGS['DOCUMENT']['ANTIWORD']
-        command = f'{antiword} {filename}'
-        with open(filename, 'wb') as f:
-            copyfileobj(self.response, f)
-        f.close()
+        command = f'{antiword} {self.path}'
         text = check_output(command, shell =  True).decode()
-        os.remove(filename)
         text.replace("  "," ")
         paragraphs = text.split('\r\n\r\n')
         paragraphs = [el.strip() for el in paragraphs] 
@@ -76,31 +72,45 @@ class Reader(object):
         pass
     
     def rtf2text(self):
-        text = BytesIO(self.response.data).read().decode()
-        self.text = self._striprtf(text)
-        self.preProcess()
-        return self.text
-        pass
+      f= open(self.path,"r")
+      text = f.read().decode()
+      self.text = self._striprtf(text)
+      self.preProcess()
+      f.close()
+      pass
+
     
     def text2text(self):
-        self.text = BytesIO(self.response.data).read().decode()
-        self.preProcess()
-        return self.text
+      f= open(self.path,"r")
+      text = f.read().decode()
+      self.text = self._striprtf(text)
+      
+      self.preProcess()
+      f.close()
+      return self.text
 
 
     def pdf2text(self):
         #https://www.blog.pythonlibrary.org/2018/05/03/exporting-data-from-pdfs-with-python/
-        resource_manager = PDFResourceManager()
-        fake_file_handle = BytesIO()
-        converter = HTMLConverter(resource_manager, fake_file_handle,codec='utf-8',laparams = LAParams())
-        page_interpreter = PDFPageInterpreter(resource_manager, converter)
-        for page in PDFPage.get_pages(BytesIO(self.response.data), caching=True,check_extractable=True):
-            page_interpreter.process_page(page)
-        self.html = fake_file_handle.getvalue().decode('utf-8')
-        text_maker  =  HTML2Text()
-        self.text = text_maker.handle(self.html)
-        self.preProcess()
-        return self.text
+         rsrcmgr = PDFResourceManager()
+         retstr = StringIO()
+         codec = 'utf-8'
+         laparams = LAParams()
+         device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
+         fp = open(self.path, 'r')
+         interpreter = PDFPageInterpreter(rsrcmgr, device)
+         password = ""
+         maxpages = 0
+         caching = True
+         pagenos=set()
+         for page in PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password,caching=caching, check_extractable=True):
+            interpreter.process_page(page)
+         fp.close()
+         device.close()
+         self.text = retstr.getvalue()
+         retstr.close()
+         self.preProcess()
+         pass
     
     def preProcess(self):
         import re
