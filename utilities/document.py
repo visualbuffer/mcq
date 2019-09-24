@@ -6,7 +6,7 @@ from pdfminer.converter import TextConverter
 from pdfminer.pdfinterp import PDFPageInterpreter
 from pdfminer.pdfinterp import PDFResourceManager
 from pdfminer.pdfpage import PDFPage
-from io import StringIO
+from  io import StringIO
 
 from pdfminer.layout import LAParams
 import yaml
@@ -95,16 +95,10 @@ class Reader(object):
       fake_file_handle = StringIO()
       converter = TextConverter(resource_manager, fake_file_handle)
       page_interpreter = PDFPageInterpreter(resource_manager, converter)
-   
       with open(self.path, 'rb') as fh:
-         for page in PDFPage.get_pages(fh, 
-                                       caching=True,
-                                       check_extractable=True):
+         for page in PDFPage.get_pages(fh,  caching=True, check_extractable=True):
                page_interpreter.process_page(page)
-   
          text = fake_file_handle.getvalue()
-   
-      # close open handles
       converter.close()
       fake_file_handle.close()
       self.text = text
