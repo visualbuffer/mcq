@@ -1,0 +1,5 @@
+BASE_DIR: D:\ki-ai\
+
+DOCUMENT :
+    TEMP_DIR: d:\ki-ai\.temp\
+    ANTIWORD: C:\antiword\antiword.exe
