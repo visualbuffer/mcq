@@ -92,11 +92,11 @@ class Reader(object):
 
     def pdf2text(self):
       resource_manager = PDFResourceManager()
-      fake_file_handle = io.StringIO()
+      fake_file_handle = StringIO()
       converter = TextConverter(resource_manager, fake_file_handle)
       page_interpreter = PDFPageInterpreter(resource_manager, converter)
    
-      with open(pdf_path, 'rb') as fh:
+      with open(self.path, 'rb') as fh:
          for page in PDFPage.get_pages(fh, 
                                        caching=True,
                                        check_extractable=True):
