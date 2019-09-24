@@ -69,7 +69,7 @@ class Reader(object):
       self.paragraphs = [el for el in paragraphs if len(el) > 5] 
       self.text = '\n\n'.join(paragraphs)
       
-      return
+      return self.text
    
    def rtf2text(self):
       f= open(self.path,"r")
@@ -77,7 +77,7 @@ class Reader(object):
       self.text = self._striprtf(text)
       self.preProcess()
       f.close()
-      return
+      return self.text
 
    
    def text2text(self):
@@ -102,7 +102,7 @@ class Reader(object):
       fake_file_handle.close()
       self.text = text
       self.preProcess()
-      return
+      return self.text
    
    def preProcess(self):
       import re
