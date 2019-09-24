@@ -2,9 +2,9 @@ from docx import Document
 import re
 from html2text import HTML2Text
 from subprocess import check_output
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter
-from pdfminer.layout import LAParams
+from pdfminer.pdfinterp import PDFPageInterpreter
+from pdfminer.pdfinterp import PDFResourceManager
 from pdfminer.pdfpage import PDFPage
 from io import StringIO
 
@@ -91,26 +91,25 @@ class Reader(object):
 
 
     def pdf2text(self):
-        #https://www.blog.pythonlibrary.org/2018/05/03/exporting-data-from-pdfs-with-python/
-         rsrcmgr = PDFResourceManager()
-         retstr = StringIO()
-         codec = 'utf-8'
-         laparams = LAParams()
-         device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
-         fp = open(self.path, 'r')
-         interpreter = PDFPageInterpreter(rsrcmgr, device)
-         password = ""
-         maxpages = 0
-         caching = True
-         pagenos=set()
-         for page in PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password,caching=caching, check_extractable=True):
-            interpreter.process_page(page)
-         fp.close()
-         device.close()
-         self.text = retstr.getvalue()
-         retstr.close()
-         self.preProcess()
-         pass
+      resource_manager = PDFResourceManager()
+      fake_file_handle = io.StringIO()
+      converter = TextConverter(resource_manager, fake_file_handle)
+      page_interpreter = PDFPageInterpreter(resource_manager, converter)
+   
+      with open(pdf_path, 'rb') as fh:
+         for page in PDFPage.get_pages(fh, 
+                                       caching=True,
+                                       check_extractable=True):
+               page_interpreter.process_page(page)
+   
+         text = fake_file_handle.getvalue()
+   
+      # close open handles
+      converter.close()
+      fake_file_handle.close()
+      self.text = text
+      self.preProcess()
+      pass
     
     def preProcess(self):
         import re
