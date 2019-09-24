@@ -9,7 +9,7 @@ import os
 
 def get(directory = "./files"):
     files =  os.listdir(directory)
-    valid = ['docx','doc','txt','pdf']
+    valid = ['docx','doc','txt','pdf','rtf']
     paragraphs = []
     texts = []
     for document in files:

@@ -41,6 +41,8 @@ class Reader(object):
                self.doc2text()
             elif self._file_extension == 'rtf' : 
                self.rtf2text()
+            elif self._file_extension == 'txt' : 
+               self.text2text()
             self.response.close()
 
    #TODO RTF PARSER AND DOC PARSER
