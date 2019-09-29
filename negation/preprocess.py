@@ -2,7 +2,7 @@
 import sys
 if not 'texar_repo' in sys.path:
   sys.path += ['texar_repo']
-from config import *
+from negation.config import *
 from texar_repo.examples.bert.utils import data_utils, model_utils, tokenization
 from texar_repo.examples.transformer.utils import data_utils, utils
 import tensorflow as tf

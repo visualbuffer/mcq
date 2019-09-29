@@ -13,9 +13,9 @@ import sys
 if not 'texar_repo' in sys.path:
   sys.path += ['texar_repo']
 
-from config import *
-from model import *
-from preprocess import *
+from negation.config import *
+from negation.model import *
+from negation.preprocess import *
 
 
 start_tokens = tf.fill([tx.utils.get_batch_size(src_input_ids)],

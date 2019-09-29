@@ -5,8 +5,8 @@ if not 'texar_repo' in sys.path:
 import tensorflow as tf
 import texar as tx
 import numpy as np
-from config import *
-from model import *
+from negation.config import *
+from negation.model import *
 
 import os
 
